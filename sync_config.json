@@ -1,0 +1,9 @@
+{
+    "source": "/home/pi/ircam/OUT/",
+    "destination": "web@urbisphere.uni-freiburg.de:PI-160/",
+    "archive_dir": "/home/pi/ircam/archive/",
+    "delete_empty_dirs": true,
+    "archive_older_than": 5,
+    "archive_max_fill_fraction": 0.9,
+    "sync_repeat_time_min": 5
+}
