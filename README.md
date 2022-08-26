@@ -20,5 +20,5 @@ Everything in `source` is transferred to `destination` every `sync_repeat_time_m
 
 Files in `source` that are older than `archive_older_than_mins` minutes are zipped and moved to `archive_dir`.
 
-When the `archive_dir` volume is more than `archive_max_fill_fraction` * 100 percent full, remove the oldest zip files.
+When the `archive_dir` volume is more than `archive_max_fill_fraction` * 100 percent full, remove the oldest zip file.
 
