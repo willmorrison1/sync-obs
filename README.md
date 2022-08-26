@@ -1,5 +1,5 @@
 # sync-obs
-simple sync script for raw obs files
+simple sync script for syncing raw files from observation sites to a remote server.
 
 
 # config
@@ -18,7 +18,7 @@ simple sync script for raw obs files
 
 Everything in `source` is transferred to `destination` every `sync_repeat_time_mins` minutes.
 
-Files in `source` that are older than `archive_older_than_mins` minutes are zipped in `archive_dir`.
+Files in `source` that are older than `archive_older_than_mins` minutes are zipped and moved to `archive_dir`.
 
-Remove the oldest zip files in `archive_dir` until the `archive_dir` volume is less than `archive_max_fill_fraction` * 100 percent full.
+When the `archive_dir` volume is more than `archive_max_fill_fraction` * 100 percent full, remove the oldest zip files.
 
