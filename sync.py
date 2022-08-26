@@ -17,22 +17,22 @@ class Config:
     destination: str
     archive_dir: str
     delete_empty_dirs: bool
-    archive_older_than: int
+    archive_older_than_mins: int
     archive_max_fill_fraction: float
-    sync_repeat_time_min: float
+    sync_repeat_time_mins: float
 
     def __post_init__(self, **kwargs):
         if not os.path.isabs(self.source) or not os.path.isabs(self.archive_dir):
             raise ValueError(
                 "source and archive dir must not be relative directories. ")
-        if not isinstance(self.archive_older_than, int):
-            raise TypeError("archive_older_than must be int")
+        if not isinstance(self.archive_older_than_mins, int):
+            raise TypeError("archive_older_than_mins must be int")
         if (self.archive_max_fill_fraction > 0.98) or \
                 (self.archive_max_fill_fraction < 0.1):
             raise ValueError(
                 "archive_max_fill_fraction should be between 0.1 and 98")
-        if self.archive_older_than < 0:
-            raise ValueError("archive_older_than must be positive integer")
+        if self.archive_older_than_mins < 0:
+            raise ValueError("archive_older_than_mins must be positive integer")
         make_archive_dir(self.archive_dir)
 
 
@@ -126,7 +126,7 @@ def sync_files(config):
 def sync_file(filename, config):
     print(f'Rsyncing {filename}')
     rsync_upload_file(filename, config.destination)
-    if file_age(filename) > config.archive_older_than:
+    if file_age(filename) > config.archive_older_than_mins:
         print(f'Archiving {filename}')
         archive_file(filename, config.archive_dir)
 
@@ -149,6 +149,6 @@ if __name__ == "__main__":
         app_cleanup(config)
         time_end = datetime.utcnow()
         time_taken = (time_end - time_start).total_seconds()
-        repeat_time_wait = config.sync_repeat_time_min - (time_taken / 60) 
+        repeat_time_wait = config.sync_repeat_time_mins - (time_taken / 60) 
         if repeat_time_wait < 0:
             repeat_time_wait = 0
