@@ -6,10 +6,10 @@ Description=sync_obs Service
 After=multi-user.target
 [Service]
 Type=idle
-User=pi
+User=smurobs
 RestartSec=10
-WorkingDirectory=~/sync-obs/
-ExecStart=/usr/bin/python3 ~/sync-obs/sync.py
+WorkingDirectory=/home/smurobs/sync-obs/
+ExecStart=/usr/bin/python3 /home/smurobs/sync-obs/sync.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
