@@ -20,6 +20,7 @@ class Config:
     archive_older_than_mins: int
     archive_max_fill_fraction: float
     sync_repeat_time_mins: float
+    rsync_opts: str
 
     def __post_init__(self, **kwargs):
         if not os.path.isabs(self.source) or not os.path.isabs(self.archive_dir):
@@ -80,8 +81,8 @@ def add_file_to_zip(zip_path, raw_file, compress_level_int=7):
     os.remove(raw_file)
 
 
-def rsync_upload_file(filename, destination):
-    rsync_result = os.system("rsync --append -a --compress --compress-level=7 " + filename + " " +
+def rsync_upload_file(filename, destination, rsync_opts):
+    rsync_result = os.system(rsync_opts + " " + filename + " " +
                              os.path.join(destination, ""))
     if rsync_result != 0:
         raise ValueError(f"Rsync failed with result {rsync_result}")
@@ -125,7 +126,7 @@ def sync_files(config):
 
 def sync_file(filename, config):
     print(f'Rsyncing {filename}')
-    rsync_upload_file(filename, config.destination)
+    rsync_upload_file(filename, config.destination, config.rsync_opts)
     if file_age(filename) > config.archive_older_than_mins:
         print(f'Archiving {filename}')
         archive_file(filename, config.archive_dir)
@@ -149,6 +150,6 @@ if __name__ == "__main__":
         app_cleanup(config)
         time_end = datetime.utcnow()
         time_taken = (time_end - time_start).total_seconds()
-        repeat_time_wait = config.sync_repeat_time_mins - (time_taken / 60) 
+        repeat_time_wait = config.sync_repeat_time_mins - (time_taken / 60)
         if repeat_time_wait < 0:
             repeat_time_wait = 0
