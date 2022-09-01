@@ -8,8 +8,8 @@ After=multi-user.target
 Type=idle
 User=pi
 RestartSec=10
-WorkingDirectory=${BASE_DIR}/ircam/sync-obs
-ExecStart=/usr/bin/python3 ${BASE_DIR}/ircam/sync-obs/sync.py --config_file ${BASE_DIR}/ircam/sync_config.json
+WorkingDirectory=~/sync-obs/
+ExecStart=/usr/bin/python3 ~/sync-obs/sync.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
