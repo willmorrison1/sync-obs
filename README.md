@@ -1,8 +1,16 @@
 # sync-obs
 simple sync script for syncing raw files from observation sites to a remote server.
 
+``` 
+git clone https://github.com/willmorrison1/sync-obs
+cd sync-obs
+chmod u+rwx *
+nano sync_config.json
+sudo ./install_service.sh
+```
 
-# config
+# config example
+
 
 ``` json
 {
@@ -17,7 +25,7 @@ simple sync script for syncing raw files from observation sites to a remote serv
 }
 
 ```
-
+# sync-obs logic
 Everything in `source` is transferred to `destination` every `sync_repeat_time_mins` minutes.
 
 Files in `source` that are older than `archive_older_than_mins` minutes are zipped and moved to `archive_dir`.
