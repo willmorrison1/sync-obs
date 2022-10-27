@@ -32,3 +32,13 @@ Files in `source` that are older than `archive_older_than_mins` minutes are zipp
 
 When the `archive_dir` volume is more than `archive_max_fill_fraction` * 100 percent full, remove the oldest zip file.
 
+# check is running
+
+```
+systemctl status sync_obs.service
+```
+and/or
+```
+journalctl -u sync_obs.service
+```
+
