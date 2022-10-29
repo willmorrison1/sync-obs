@@ -2,7 +2,7 @@
 
 import os
 from argparse import ArgumentParser
-from time import time
+from time import time, sleep
 from zipfile import ZipFile, ZIP_DEFLATED
 from datetime import date, datetime
 from json import load as json_load
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     repeat_time_wait = 0
     while True:
         print(f'sleeping for {repeat_time_wait} minutes')
-        time.sleep(repeat_time_wait * 60)
+        sleep(repeat_time_wait * 60)
         time_start = datetime.utcnow()
         config = app_setup(args.config_file)
         sync_files(config)
