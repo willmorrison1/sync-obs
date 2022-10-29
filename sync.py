@@ -23,7 +23,8 @@ class Config:
     rsync_opts: str
 
     def __post_init__(self, **kwargs):
-        if not os.path.isabs(self.source) or not os.path.isabs(self.archive_dir):
+        if not os.path.isabs(self.source) or not \
+                os.path.isabs(self.archive_dir):
             raise ValueError(
                 "source and archive dir must not be relative directories. ")
         if not isinstance(self.archive_older_than_mins, int):
@@ -33,8 +34,8 @@ class Config:
             raise ValueError(
                 "archive_max_fill_fraction should be between 0.1 and 98")
         if self.archive_older_than_mins < 0:
-            raise ValueError("archive_older_than_mins must be positive integer")
-        make_archive_dir(self.archive_dir)
+            raise ValueError(
+                "archive_older_than_mins must be positive integer")
 
 
 def parse_config(config_file):
@@ -50,23 +51,16 @@ def app_setup(config_file):
 
 def app_cleanup(config):
     archive_usage = shutil.disk_usage(config.archive_dir)
-    while (archive_usage.used / archive_usage.total) > config.archive_max_fill_fraction:
+    while (archive_usage.used / archive_usage.total) > \
+            config.archive_max_fill_fraction:
         archive_file_pattern = os.path.join(config.archive_dir, "???????.zip")
         files = glob.glob(f'{archive_file_pattern}')
         files.sort(key=os.path.getmtime, reverse=True)
         if len(files) > 0:
             os.remove(files.pop())
         else:
-            print("Ran out of archive files to remove") 
+            print("Ran out of archive files to remove")
             break
-
-
-def make_archive_dir(archive_dir):
-    """Make the archive directory."""
-    if not os.path.exists(archive_dir):
-        print("Archive " + archive_dir + " does not exist")
-        os.makedirs(archive_dir, exist_ok=True)
-        print("Created " + archive_dir)
 
 
 def add_file_to_zip(zip_path, raw_file, compress_level_int=7):
@@ -97,8 +91,6 @@ def file_age(filename):
 def archive_file(filename, archive_dir):
     zipfile_name = date.today().strftime("%Y%j") + ".zip"
     zipfile_path = os.path.join(archive_dir, zipfile_name)
-    if not os.path.exists(os.path.dirname(zipfile_path)):
-        os.makedirs(os.path.dirname(zipfile_path))
     add_file_to_zip(zip_path=zipfile_path, raw_file=filename)
 
 
