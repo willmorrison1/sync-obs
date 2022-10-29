@@ -74,6 +74,9 @@ class Config:
                 break
 
     def __post_init__(self, **kwargs):
+        self.source = os.path.normpath(self.source)
+        self.archive = os.path.normpath(self.archive)
+
         if not os.path.isabs(self.source) or not \
                 os.path.isabs(self._archive_dir):
             raise ValueError(
