@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 
-import argparse
 import os
-import time
-import zipfile
+from argparse import ArgumentParser
+from time import time
+from zipfile import ZipFile, ZIP_DEFLATED
 from datetime import date, datetime
-import json
+from json import load as json_load
 from dataclasses import dataclass
-import shutil
-import glob
+from shutil import disk_usage
+from glob import glob
+
+ARCHIVE_MAX_FILL_FRACTION_MIN = 0.1
+ARCHIVE_MAX_FILL_FRACTION_MAX = 0.98
 
 
 @dataclass
@@ -53,19 +56,19 @@ class Config:
         zipfile_name = date.today().strftime("%Y%j") + ".zip"
         zipfile_path = os.path.join(self.archive_dir, zipfile_name)
         if self.do_archive:
-            z = zipfile.ZipFile(zipfile_path, "a", zipfile.ZIP_DEFLATED,
-                                compresslevel=compress_level_int)
+            z = ZipFile(zipfile_path, "a", ZIP_DEFLATED,
+                        compresslevel=compress_level_int)
             z.write(filename)
             z.close()
             os.remove(filename)
 
     def app_cleanup(self):
-        archive_usage = shutil.disk_usage(self.archive_dir)
+        archive_usage = disk_usage(self.archive_dir)
         while (archive_usage.used / archive_usage.total) > \
                 self.archive_max_fill_fraction:
             archive_file_pattern = os.path.join(
                 self.archive_dir, "???????.zip")
-            files = glob.glob(f'{archive_file_pattern}')
+            files = glob(f'{archive_file_pattern}')
             files.sort(key=os.path.getmtime, reverse=True)
             if len(files) > 0:
                 os.remove(files.pop())
@@ -83,10 +86,12 @@ class Config:
                 "source and archive dir must not be relative directories. ")
         if not isinstance(self.archive_older_than_mins, int):
             raise TypeError("archive_older_than_mins must be int")
-        if (self.archive_max_fill_fraction > 0.98) or \
-                (self.archive_max_fill_fraction < 0.1):
+        if (self.archive_max_fill_fraction > ARCHIVE_MAX_FILL_FRACTION_MAX) or \
+                (self.archive_max_fill_fraction < ARCHIVE_MAX_FILL_FRACTION_MIN):
             raise ValueError(
-                "archive_max_fill_fraction should be between 0.1 and 98")
+                f"archive_max_fill_fraction should be between"
+                f"{ARCHIVE_MAX_FILL_FRACTION_MIN} and "
+                f"{ARCHIVE_MAX_FILL_FRACTION_MAX}")
         if self.archive_older_than_mins < 0:
             raise ValueError(
                 "archive_older_than_mins must be positive integer")
@@ -96,7 +101,7 @@ class Config:
 
 def parse_config(config_file):
     with open(config_file) as json_file:
-        config = Config(**json.load(json_file))
+        config = Config(**json_load(json_file))
         return config
 
 
@@ -115,7 +120,7 @@ def rsync_upload_file(filename, destination, rsync_opts):
 
 def file_age(filename):
     file_ctime = os.path.getmtime(filename)
-    file_age_mins = (time.time() - file_ctime) / 60
+    file_age_mins = (time() - file_ctime) / 60
     return file_age_mins
 
 
@@ -151,7 +156,7 @@ def sync_file(filename, config):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         description='Sync data to remote server and do local backup.')
     parser.add_argument(
         '--config_file', help='Directory to configuration file', type=str,
@@ -165,8 +170,7 @@ if __name__ == "__main__":
         time_start = datetime.utcnow()
         config = app_setup(args.config_file)
         sync_files(config)
-        time_end = datetime.utcnow()
-        time_taken = (time_end - time_start).total_seconds()
+        time_taken = (datetime.utcnow() - time_start).total_seconds()
         repeat_time_wait = config.sync_repeat_time_mins - (time_taken / 60)
         if repeat_time_wait < 0:
             repeat_time_wait = 0
