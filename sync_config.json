@@ -1,7 +1,7 @@
 {
-    "source": "C:/Users/willm/Desktop/sync/source",
-    "destination": "C:/Users/willm/Desktop/sync/dest",
-    "_archive_dir": "D:/AUsers/willm/Desktop/sync/archive",
+    "source": <<"/home/smurobs/FTP/CL61/">>,
+    "destination": <<"datagate5@gateway.meteo.uni-freiburg.de:/data/">>,
+    "_archive_dir": <<"/home/smurobs/archive/">>,
     "delete_empty_dirs": true,
     "archive_older_than_mins": 5,
     "archive_max_fill_fraction": 0.9,
