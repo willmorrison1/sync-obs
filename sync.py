@@ -104,8 +104,8 @@ def app_cleanup(config):
 
 
 def rsync_upload_file(filename, destination, rsync_opts):
-    # rsync_result = os.system(rsync_opts + " " + filename + " " +
-    #                          os.path.join(destination, ""))
+    rsync_result = os.system(rsync_opts + " " + filename + " " +
+                             os.path.join(destination, ""))
     rsync_result = 0
     if rsync_result != 0:
         raise ValueError(f"Rsync failed with result {rsync_result}")
