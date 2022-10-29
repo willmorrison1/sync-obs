@@ -59,6 +59,20 @@ class Config:
             z.close()
             os.remove(filename)
 
+    def app_cleanup(self):
+        archive_usage = shutil.disk_usage(self.archive_dir)
+        while (archive_usage.used / archive_usage.total) > \
+                self.archive_max_fill_fraction:
+            archive_file_pattern = os.path.join(
+                self.archive_dir, "???????.zip")
+            files = glob.glob(f'{archive_file_pattern}')
+            files.sort(key=os.path.getmtime, reverse=True)
+            if len(files) > 0:
+                os.remove(files.pop())
+            else:
+                print("Ran out of archive files to remove")
+                break
+
     def __post_init__(self, **kwargs):
         if not os.path.isabs(self.source) or not \
                 os.path.isabs(self._archive_dir):
@@ -85,28 +99,13 @@ def parse_config(config_file):
 
 def app_setup(config_file):
     config = parse_config(config_file)
-    app_cleanup(config)
+    config.app_cleanup()
     return config
-
-
-def app_cleanup(config):
-    archive_usage = shutil.disk_usage(config.archive_dir)
-    while (archive_usage.used / archive_usage.total) > \
-            config.archive_max_fill_fraction:
-        archive_file_pattern = os.path.join(config.archive_dir, "???????.zip")
-        files = glob.glob(f'{archive_file_pattern}')
-        files.sort(key=os.path.getmtime, reverse=True)
-        if len(files) > 0:
-            os.remove(files.pop())
-        else:
-            print("Ran out of archive files to remove")
-            break
 
 
 def rsync_upload_file(filename, destination, rsync_opts):
     rsync_result = os.system(rsync_opts + " " + filename + " " +
                              os.path.join(destination, ""))
-    rsync_result = 0
     if rsync_result != 0:
         raise ValueError(f"Rsync failed with result {rsync_result}")
 
@@ -141,12 +140,11 @@ def sync_files(config):
 
 def sync_file(filename, config):
     print(f'Rsyncing {filename}')
-    time.sleep(1)
     rsync_upload_file(filename, config.destination, config.rsync_opts)
     if file_age(filename) > config.archive_older_than_mins:
         print(f'Archiving {filename}')
         config.archive_file(filename)
-        app_cleanup(config)
+        config.app_cleanup()
 
 
 if __name__ == "__main__":
