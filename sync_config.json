@@ -1,7 +1,7 @@
 {
     "source": "C:/Users/willm/Desktop/sync/source",
     "destination": "C:/Users/willm/Desktop/sync/dest",
-    "archive_dir": "C:/Users/willm/Desktop/sync/archive",
+    "_archive_dir": "D:/AUsers/willm/Desktop/sync/archive",
     "delete_empty_dirs": true,
     "archive_older_than_mins": 5,
     "archive_max_fill_fraction": 0.9,

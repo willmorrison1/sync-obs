@@ -15,16 +15,53 @@ import glob
 class Config:
     source: str
     destination: str
-    archive_dir: str
+    _archive_dir: str
     delete_empty_dirs: bool
     archive_older_than_mins: int
     archive_max_fill_fraction: float
     sync_repeat_time_mins: float
     rsync_opts: str
 
+    @property
+    def do_archive(self):
+        return True
+
+    @property
+    def _archive_dir_local(self):
+        return os.path.join(
+            os.path.dirname(self.source),
+            os.path.basename(self.source) + "_ARCHIVE",
+        )
+
+    @property
+    def archive_dir(self):
+        archive_dir = self._archive_dir
+        if not os.path.exists(archive_dir):
+            try:
+                os.makedirs(archive_dir, exist_ok=True)
+            except Exception:
+                archive_dir = self._archive_dir_local
+                try:
+                    os.makedirs(archive_dir, exist_ok=True)
+                except Exception:
+                    self.do_archive = False
+                    print("Could not archive.")
+
+        return archive_dir
+
+    def archive_file(self, filename, compress_level_int=7):
+        zipfile_name = date.today().strftime("%Y%j") + ".zip"
+        zipfile_path = os.path.join(self.archive_dir, zipfile_name)
+        if self.do_archive:
+            z = zipfile.ZipFile(zipfile_path, "a", zipfile.ZIP_DEFLATED,
+                                compresslevel=compress_level_int)
+            z.write(filename)
+            z.close()
+            os.remove(filename)
+
     def __post_init__(self, **kwargs):
         if not os.path.isabs(self.source) or not \
-                os.path.isabs(self.archive_dir):
+                os.path.isabs(self._archive_dir):
             raise ValueError(
                 "source and archive dir must not be relative directories. ")
         if not isinstance(self.archive_older_than_mins, int):
@@ -36,6 +73,8 @@ class Config:
         if self.archive_older_than_mins < 0:
             raise ValueError(
                 "archive_older_than_mins must be positive integer")
+        if os.path.dirname(self.source) == self.source:
+            raise ValueError("source cannot be a root directory.")
 
 
 def parse_config(config_file):
@@ -46,6 +85,7 @@ def parse_config(config_file):
 
 def app_setup(config_file):
     config = parse_config(config_file)
+    app_cleanup(config)
     return config
 
 
@@ -63,21 +103,10 @@ def app_cleanup(config):
             break
 
 
-def add_file_to_zip(zip_path, raw_file, compress_level_int=7):
-    """Add file to a zip archive."""
-    zip_pathdir = os.path.dirname(zip_path)
-    if not os.path.exists(zip_pathdir):
-        os.makedirs(zip_pathdir, exist_ok=True)
-    z = zipfile.ZipFile(zip_path, "a", zipfile.ZIP_DEFLATED,
-                        compresslevel=compress_level_int)
-    z.write(raw_file)
-    z.close()
-    os.remove(raw_file)
-
-
 def rsync_upload_file(filename, destination, rsync_opts):
-    rsync_result = os.system(rsync_opts + " " + filename + " " +
-                             os.path.join(destination, ""))
+    # rsync_result = os.system(rsync_opts + " " + filename + " " +
+    #                          os.path.join(destination, ""))
+    rsync_result = 0
     if rsync_result != 0:
         raise ValueError(f"Rsync failed with result {rsync_result}")
 
@@ -86,12 +115,6 @@ def file_age(filename):
     file_ctime = os.path.getmtime(filename)
     file_age_mins = (time.time() - file_ctime) / 60
     return file_age_mins
-
-
-def archive_file(filename, archive_dir):
-    zipfile_name = date.today().strftime("%Y%j") + ".zip"
-    zipfile_path = os.path.join(archive_dir, zipfile_name)
-    add_file_to_zip(zip_path=zipfile_path, raw_file=filename)
 
 
 def delete_empty_src_directories(source_dir):
@@ -118,10 +141,12 @@ def sync_files(config):
 
 def sync_file(filename, config):
     print(f'Rsyncing {filename}')
+    time.sleep(1)
     rsync_upload_file(filename, config.destination, config.rsync_opts)
     if file_age(filename) > config.archive_older_than_mins:
         print(f'Archiving {filename}')
-        archive_file(filename, config.archive_dir)
+        config.archive_file(filename)
+        app_cleanup(config)
 
 
 if __name__ == "__main__":
@@ -139,7 +164,6 @@ if __name__ == "__main__":
         time_start = datetime.utcnow()
         config = app_setup(args.config_file)
         sync_files(config)
-        app_cleanup(config)
         time_end = datetime.utcnow()
         time_taken = (time_end - time_start).total_seconds()
         repeat_time_wait = config.sync_repeat_time_mins - (time_taken / 60)
