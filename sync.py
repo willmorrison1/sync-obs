@@ -36,7 +36,7 @@ class Config:
     @property
     def archive_dir(self):
         archive_dir = self._archive_dir
-        if not os.path.exists(archive_dir):
+        if not os.access(archive_dir, os.W_OK):
             try:
                 os.makedirs(archive_dir, exist_ok=True)
             except Exception:
