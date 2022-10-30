@@ -6,5 +6,5 @@
     "archive_older_than_mins": 5,
     "archive_max_fill_fraction": 0.9,
     "sync_repeat_time_mins": 5,
-    "rsync_opts": "rsync -v -e 'ssh -oBatchMode=yes' -rt -l -D --compress --compress-level=7 --append-verify --update --no-owner --no-group --no-perms --chmod=ugo=rwX --mkpath "
+    "rsync_opts": "rsync -e 'ssh -oBatchMode=yes' -rt -l -D --compress --compress-level=7 --append-verify --update --no-owner --no-group --no-perms --chmod=ugo=rwX --mkpath "
 }
