@@ -150,7 +150,7 @@ def sync_file(filename, config):
     print(f'Rsyncing {filename}')
     rsync_upload_file(filename, config.destination, config.rsync_opts)
     if file_age(filename) > config.archive_older_than_mins:
-        print(f'Archiving {filename}')
+        # print(f'Archiving {filename}')
         config.archive_file(filename)
         config.app_cleanup()
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     repeat_time_wait = 0
     while True:
-        print(f'sleeping for {repeat_time_wait} minutes')
+        # print(f'sleeping for {repeat_time_wait} minutes')
         sleep(repeat_time_wait * 60)
         time_start = datetime.utcnow()
         config = app_setup(args.config_file)
