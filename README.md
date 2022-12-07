@@ -9,7 +9,7 @@ nano sync_config.json
 sudo ./install_service.sh
 ```
 
-# config example
+# sync_config.json example
 
 
 ``` json
