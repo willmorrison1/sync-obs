@@ -27,11 +27,13 @@ sudo ./install_service.sh
 ```
 # sync-obs logic
 
-Files in `source` are transferred to `destination` every `sync_repeat_time_mins` minutes.
+With reference to the sync_config.json keys: 
+
+Files in `source` are transferred to `destination` every `sync_repeat_time_mins` minutes using the `rsync_opts` command.
 
 Files in `source` last modified more than `archive_older_than_mins` minutes ago are zipped and moved to `_archive_dir`.
 
-When the `_archive_dir` volume is more than `archive_max_fill_fraction` * 100 percent full, the oldest zip file is removed.
+When the `_archive_dir` volume is more than `archive_max_fill_fraction` full, the oldest zip file is removed.
 
 When the `_archive_dir` is missing, files are archived in a directory on the same level as the `source` directory.
 
