@@ -37,7 +37,7 @@ When the `_archive_dir` volume is more than `archive_max_fill_fraction` full, th
 
 When the `_archive_dir` is missing, files are archived in a directory on the same level as the `source` directory.
 
-The contents of sync_config.json are evaluated after each `sync_repeat_time_mins`: no need to restart the script.
+The contents of sync_config.json are evaluated after each `sync_repeat_time_mins`: no need to restart the script if you modify sync_config.json
 
 # check is running
 
